@@ -1,7 +1,7 @@
 ﻿import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-const String kApiBaseUrl = 'https://vice-remnant-frugally.ngrok-free.dev/api/';
+const String kApiBaseUrl = 'https://samabusbi-backend.onrender.com/api/';
 
 class ApiService {
   static String? authToken;
