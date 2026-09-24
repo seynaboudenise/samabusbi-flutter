@@ -62,7 +62,8 @@ class _GestionBusPageState extends State<GestionBusPage> {
                     itemCount: bus.length,
                     itemBuilder: (context, i) {
                       final b = bus[i];
-                      final enService = b['statut'] == 'En service';
+                      final vitesse = double.tryParse('${b['vitesse_actuelle'] ?? 0}') ?? 0;
+                      final enCirculation = vitesse > 0;
                       return Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(16),
@@ -75,7 +76,7 @@ class _GestionBusPageState extends State<GestionBusPage> {
                                 width: 46,
                                 height: 46,
                                 decoration: BoxDecoration(
-                                  color: enService ? green : Colors.grey,
+                                  color: enCirculation ? green : Colors.grey,
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Center(
@@ -96,23 +97,25 @@ class _GestionBusPageState extends State<GestionBusPage> {
                                 ),
                               ),
                               Text(
-                                b['statut'] ?? '',
+                                enCirculation ? 'En circulation' : 'À l\'arrêt',
                                 style: TextStyle(
-                                  color: enService ? green : Colors.redAccent,
+                                  color: enCirculation ? green : Colors.grey.shade600,
                                   fontWeight: FontWeight.w800,
                                   fontSize: 12,
                                 ),
                               ),
                             ]),
-                            if (b['prochain_arret'] != null && '${b['prochain_arret']}'.isNotEmpty) ...[
-                              const Divider(height: 20),
-                              Row(children: [
-                                const Icon(Icons.location_on_rounded, size: 16, color: green),
-                                const SizedBox(width: 6),
-                                Text('Prochain arrêt : ${b['prochain_arret']}',
-                                    style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                              ]),
-                            ],
+                            const Divider(height: 20),
+                            Row(children: [
+                              const Icon(Icons.location_on_rounded, size: 16, color: green),
+                              const SizedBox(width: 6),
+                              Text(
+                                (b['prochain_arret'] != null && '${b['prochain_arret']}'.isNotEmpty)
+                                    ? 'Prochain arrêt : ${b['prochain_arret']}'
+                                    : (enCirculation ? 'Prochain arrêt : en calcul...' : 'Au terminus'),
+                                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                              ),
+                            ]),
                           ],
                         ),
                       );
