@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -142,55 +142,87 @@ class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
       );
     }).toList();
 
-    return Stack(children: [
-      FlutterMap(
-        mapController: _mapController,
-        options: const MapOptions(initialCenter: kDakarCenter, initialZoom: 12),
-        children: [
-          TileLayer(
-            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.samabus.app',
-          ),
-          MarkerLayer(markers: markers),
-        ],
-      ),
-      Positioned(
-        top: 14,
-        left: 14,
-        right: 14,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(.1), blurRadius: 12)],
-          ),
-          child: Row(children: [
-            const Icon(Icons.gps_fixed_rounded, color: bleu, size: 18),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                loading ? 'Chargement...' : erreur ?? '${_displayPositions.length} bus en circulation',
-                style: const TextStyle(fontWeight: FontWeight.w700, color: dark, fontSize: 13, decoration: TextDecoration.none),
-              ),
+    return Scaffold(
+      body: Stack(children: [
+        FlutterMap(
+          mapController: _mapController,
+          options: const MapOptions(initialCenter: kDakarCenter, initialZoom: 12),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.samabus.app',
             ),
-            IconButton(
-              icon: const Icon(Icons.center_focus_strong_rounded, color: bleu),
-              tooltip: 'Recentrer sur les bus',
-              onPressed: () => _recentrerSurLesBus(_toPositions.values.toList()),
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh_rounded, color: bleu),
-              onPressed: _charger,
-            ),
-          ]),
+            MarkerLayer(markers: markers),
+          ],
         ),
-      ),
-    ]);
+        Positioned(
+          top: 14,
+          left: 14,
+          right: 14,
+          child: SafeArea(
+            bottom: false,
+            child: Row(children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(.1), blurRadius: 12)],
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded, color: dark),
+                  tooltip: 'Retour',
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(.1), blurRadius: 12)],
+                  ),
+                  child: Row(children: [
+                    const Icon(Icons.gps_fixed_rounded, color: bleu, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        loading ? 'Chargement...' : erreur ?? '${_displayPositions.length} bus suivis',
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: dark, fontSize: 13, decoration: TextDecoration.none),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.center_focus_strong_rounded, color: bleu),
+                      tooltip: 'Recentrer sur les bus',
+                      onPressed: () => _recentrerSurLesBus(_toPositions.values.toList()),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh_rounded, color: bleu),
+                      onPressed: _charger,
+                    ),
+                  ]),
+                ),
+              ),
+            ]),
+          ),
+        ),
+      ]),
+    );
   }
 
   void _afficherDetail(dynamic b) {
     if (b == null) return;
+    final vitesse = double.tryParse('${b['vitesse_actuelle'] ?? 0}') ?? 0;
+    final enCirculation = vitesse > 0;
+    final aTerminus = !enCirculation && (b['prochain_arret'] == null || '${b['prochain_arret']}'.isEmpty);
+
+    final String statutTexte = enCirculation ? 'En circulation' : (aTerminus ? 'Au terminus' : 'À l\'arrêt');
+    final String prochainArretTexte = (b['prochain_arret'] != null && '${b['prochain_arret']}'.isNotEmpty)
+        ? '${b['prochain_arret']}'
+        : (aTerminus ? 'Terminus atteint' : 'En calcul...');
+    final String vitesseTexte = enCirculation ? '${b['vitesse_actuelle']} km/h' : 'À l\'arrêt';
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
@@ -202,13 +234,19 @@ class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
           children: [
             Text('Bus ${b['numero']} — Ligne ${b['ligne']}',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: dark)),
+            const SizedBox(height: 4),
+            Text(statutTexte,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: enCirculation ? bleu : Colors.grey.shade600,
+                )),
             const SizedBox(height: 12),
             _ligneInfo(Icons.person_rounded, 'Chauffeur', b['chauffeur'] ?? '—'),
-            _ligneInfo(Icons.location_on_rounded, 'Prochain arrêt', b['prochain_arret'] ?? '—'),
+            _ligneInfo(Icons.location_on_rounded, 'Prochain arrêt', prochainArretTexte),
             _ligneInfo(Icons.timer_rounded, 'Arrivée estimée',
                 b['eta_minutes'] != null ? '${b['eta_minutes']} min' : '—'),
-            _ligneInfo(Icons.speed_rounded, 'Vitesse actuelle',
-                b['vitesse_actuelle'] != null ? '${b['vitesse_actuelle']} km/h' : '—'),
+            _ligneInfo(Icons.speed_rounded, 'Vitesse actuelle', vitesseTexte),
             _ligneInfo(Icons.people_alt_rounded, 'Places',
                 '${b['places_occupees'] ?? 0}/${b['capacite'] ?? '—'}'),
             _ligneInfo(
