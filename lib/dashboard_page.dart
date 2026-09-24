@@ -40,16 +40,7 @@ class _DashboardPageState extends State<DashboardPage> {
           elevation: 0,
           iconTheme: const IconThemeData(color: dark),
           title: Text(_titres[tab], style: const TextStyle(color: dark, fontWeight: FontWeight.w800, fontSize: 16)),
-          actions: tab == 0
-              ? [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none_rounded),
-                    onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Aucune nouvelle notification'), behavior: SnackBarBehavior.floating),
-                    ),
-                  ),
-                ]
-              : null,
+          actions:null,
         ),
         drawer: _menu(context),
         body: SafeArea(child: IndexedStack(index: tab, children: _pages)),
