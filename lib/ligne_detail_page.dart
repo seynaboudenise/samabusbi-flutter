@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -65,6 +65,12 @@ class _LigneDetailPageState extends State<LigneDetailPage> {
   final MapController _mapController = MapController();
 
   String get _numero => '${widget.ligne['numero']}';
+
+  double get _vitesseBus =>
+      _bus != null ? (double.tryParse('${_bus['vitesse_actuelle'] ?? 0}') ?? 0) : 0;
+
+  /// true seulement si un bus est trouvé ET qu'il est réellement en train de rouler.
+  bool get _busEnCirculation => _bus != null && _vitesseBus > 0;
 
   @override
   void initState() {
@@ -145,7 +151,13 @@ class _LigneDetailPageState extends State<LigneDetailPage> {
   }
 
   Widget _enTete(String depart, String arrivee) {
-    final enCirculation = _bus != null;
+    // Trois états possibles, cohérents avec le reste de l'application :
+    // - Aucun bus trouvé pour cette ligne -> Hors ligne
+    // - Bus trouvé mais vitesse = 0 -> À l'arrêt
+    // - Bus trouvé avec vitesse > 0 -> En circulation
+    final String statutTexte = _bus == null ? 'Hors ligne' : (_busEnCirculation ? 'En circulation' : 'À l\'arrêt');
+    final Color statutCouleur = _bus == null ? Colors.grey : (_busEnCirculation ? vert : Colors.orange.shade700);
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -174,14 +186,14 @@ class _LigneDetailPageState extends State<LigneDetailPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: (enCirculation ? vert : Colors.grey).withOpacity(.12),
+            color: statutCouleur.withOpacity(.12),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Container(width: 7, height: 7, decoration: BoxDecoration(color: enCirculation ? vert : Colors.grey, shape: BoxShape.circle)),
+            Container(width: 7, height: 7, decoration: BoxDecoration(color: statutCouleur, shape: BoxShape.circle)),
             const SizedBox(width: 5),
-            Text(enCirculation ? 'En circulation' : 'Hors ligne',
-                style: TextStyle(color: enCirculation ? vert : Colors.grey.shade700, fontWeight: FontWeight.w800, fontSize: 11)),
+            Text(statutTexte,
+                style: TextStyle(color: statutCouleur, fontWeight: FontWeight.w800, fontSize: 11)),
           ]),
         ),
       ]),
@@ -484,7 +496,7 @@ class _LigneDetailPageState extends State<LigneDetailPage> {
                     ),
                   ),
                   Text(
-                    '${_bus['eta_minutes'] ?? '—'} min',
+                    _busEnCirculation ? '${_bus['eta_minutes'] ?? '—'} min' : 'Terminus',
                     style: const TextStyle(
                       color: vert,
                       fontWeight: FontWeight.w900,
@@ -494,7 +506,9 @@ class _LigneDetailPageState extends State<LigneDetailPage> {
                 ],
               ),
               Text(
-                '${_bus['prochain_arret'] ?? '—'}',
+                (_bus['prochain_arret'] != null && '${_bus['prochain_arret']}'.isNotEmpty)
+                    ? '${_bus['prochain_arret']}'
+                    : (_busEnCirculation ? 'En calcul...' : 'Terminus atteint'),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
@@ -508,9 +522,7 @@ class _LigneDetailPageState extends State<LigneDetailPage> {
                     child: _statCarte(
                       Icons.speed_rounded,
                       'Vitesse actuelle',
-                      _bus['vitesse_actuelle'] != null
-                          ? '${_bus['vitesse_actuelle']} km/h'
-                          : '—',
+                      _busEnCirculation ? '${_bus['vitesse_actuelle']} km/h' : 'À l\'arrêt',
                     ),
                   ),
                   const SizedBox(width: 10),
