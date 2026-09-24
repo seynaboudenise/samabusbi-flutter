@@ -194,7 +194,7 @@ class _HomePageState extends State<HomePage> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(color: Colors.white.withOpacity(.95), borderRadius: BorderRadius.circular(12)),
-                child: Text('${busCirculation.length} bus en circulation',
+                child: Text('${busCirculation.length} bus suivis',
                     style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: dark)),
               ),
             ),
@@ -241,7 +241,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _title(String a, String b) => Row(children: [
         Expanded(child: Text(a, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: dark))),
-        Text(b, style: const TextStyle(color: bleu, fontSize: 12, fontWeight: FontWeight.w700)),
       ]);
 
   Widget _prochainsTrajets() {
