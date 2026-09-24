@@ -109,7 +109,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               _statsGrid(),
               const SizedBox(height: 22),
-              _title('Prochains trajets', 'Voir tout'),
+              _title('Prochains trajets', ''),
               const SizedBox(height: 12),
               _prochainsTrajets(),
             ],
