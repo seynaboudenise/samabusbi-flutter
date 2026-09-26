@@ -40,17 +40,17 @@ class _GestionBusPageState extends State<GestionBusPage> {
     }
   }
 
+  String _numeroLigne(dynamic b) {
+    final texte = '${b['ligne'] ?? ''}';
+    final match = RegExp(r'\d+').firstMatch(texte);
+    return match?.group(0) ?? texte;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gestion des bus', style: TextStyle(color: dark, fontWeight: FontWeight.w800)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: dark),
-      ),
-      backgroundColor: const Color(0xFFF5F8F6),
-      body: loading
+    return Container(
+      color: const Color(0xFFF5F8F6),
+      child: loading
           ? const Center(child: CircularProgressIndicator(color: green))
           : erreur != null
               ? Center(child: Text(erreur!, style: const TextStyle(color: Colors.black54)))
@@ -89,7 +89,7 @@ class _GestionBusPageState extends State<GestionBusPage> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Ligne ${b['ligne']}',
+                                    Text('Ligne ${_numeroLigne(b)}',
                                         style: const TextStyle(fontWeight: FontWeight.w800, color: dark)),
                                     Text(b['chauffeur'] ?? '',
                                         style: const TextStyle(fontSize: 12, color: Colors.black45)),
