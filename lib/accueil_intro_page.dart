@@ -36,14 +36,14 @@ class AccueilIntroPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Votre compagnon\nde transport � Dakar',
+                      'Votre compagnon\nde transport à Dakar',
                       style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: dark, height: 1.2),
                     ),
                     const SizedBox(height: 12),
                     Container(width: 46, height: 4, decoration: BoxDecoration(color: bleu, borderRadius: BorderRadius.circular(2))),
                     const SizedBox(height: 16),
                     const Text(
-                      'Des informations en temps r�el pour des d�placements plus simples et plus rapides.',
+                     'Des informations en temps réel pour des déplacements plus simples et plus rapides.',
                       style: TextStyle(fontSize: 14, color: Colors.black54, height: 1.5),
                     ),
                     const SizedBox(height: 28),
